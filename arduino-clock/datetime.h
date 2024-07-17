@@ -15,6 +15,7 @@ public:
 
     DateTime();
 
+    void tick();
 
     void increment_day();
     void decrement_day();
