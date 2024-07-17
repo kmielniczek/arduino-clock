@@ -10,14 +10,14 @@ class Clock;
 
 class State {
 protected:
-    Clock *cnt;
+    Clock *clock;
     int counter;
 
 public:
     State() : counter(0) {};
     virtual ~State() {};
 
-    void set_context(Clock *context) { cnt = context; }
+    void set_context(Clock *clock) { this->clock = clock; }
 
     virtual void tick() = 0;
     virtual void up() = 0;
@@ -78,30 +78,38 @@ public:
 };
 
 
-class ChangeSeconds : public State {
+class Blinking : public State {
 private:
     bool displayed = true;
 
 public:
-    void tick() {
-        if (++counter == 200) {
+    void blink(int cmp_val, void *buf, size_t n) {
+        if (++counter == cmp_val) {
             counter = 0;
             if (displayed) {
-                strncpy(cnt->time_buf + 6, "  ", 2);
-                cnt->buf_changed = true;
+                memset(buf, ' ', n);
+                clock->buf_changed = true;
             }
-            else cnt->refresh_bufs();
+            else clock->refresh_bufs();
 
             displayed = !displayed;
         }
     }
+};
+
+
+class ChangeSeconds : public Blinking {
+public:
+    void tick() {
+        blink(200, clock->time_buf + 6, 2);
+    }
     void up() {
-        cnt->date_time.increment_seconds();
-        cnt->refresh_bufs();
+        clock->date_time.increment_seconds();
+        clock->refresh_bufs();
     }
     void down() {
-        cnt->date_time.decrement_seconds();
-        cnt->refresh_bufs();
+        clock->date_time.decrement_seconds();
+        clock->refresh_bufs();
     }
     void date() {
         return;
@@ -110,98 +118,62 @@ public:
 };
 
 
-class ChangeMinutes : public State {
-private:
-    bool displayed = true;
-
+class ChangeMinutes : public Blinking {
 public:
     void tick() {
-        if (++counter == 200) {
-            counter = 0;
-            if (displayed) {
-                strncpy(cnt->time_buf + 3, "  ", 2);
-                cnt->buf_changed = true;
-            }
-            else cnt->refresh_bufs();
-
-            displayed = !displayed;
-        }
+        blink(200, clock->time_buf + 3, 2);
     }
     void up() {
-        cnt->date_time.increment_minutes();
-        cnt->refresh_bufs();
+        clock->date_time.increment_minutes();
+        clock->refresh_bufs();
     }
     void down() {
-        cnt->date_time.decrement_minutes();
-        cnt->refresh_bufs();
+        clock->date_time.decrement_minutes();
+        clock->refresh_bufs();
     }
     void date() {
         return;
     }
     void time() {
-        cnt->change_state(new ChangeSeconds);
+        clock->change_state(new ChangeSeconds);
     }
 };
 
 
-class ChangeHours : public State {
-private:
-    bool displayed = true;
-
+class ChangeHours : public Blinking {
 public:
     void tick() {
-        if (++counter == 200) {
-            counter = 0;
-            if (displayed) {
-                strncpy(cnt->time_buf, "  ", 2);
-                cnt->buf_changed = true;
-            }
-            else cnt->refresh_bufs();
-
-            displayed = !displayed;
-        }
+        blink(200, clock->time_buf, 2);
     }
     void up() {
-        cnt->date_time.increment_hours();
-        cnt->refresh_bufs();
+        clock->date_time.increment_hours();
+        clock->refresh_bufs();
     }
     void down() {
-        cnt->date_time.decrement_hours();
-        cnt->refresh_bufs();
+        clock->date_time.decrement_hours();
+        clock->refresh_bufs();
     }
     void date() {
         return;
     }
     void time() {
-        cnt->change_state(new ChangeMinutes);
+        clock->change_state(new ChangeMinutes);
     }
 };
 
 
-class ChangeYear : public State {
-private:
-    bool displayed = true;
-
+class ChangeYear : public Blinking {
 public:
     void tick() {
-        if (++counter == 200) {
-            counter = 0;
-            if (displayed) {
-                strncpy(cnt->date_buf + 6, "    ", 4);
-                cnt->buf_changed = true;
-            }
-            else cnt->refresh_bufs();
-
-            displayed = !displayed;
-        }
+        blink(200, clock->date_buf + 6, 4);
     }
     void up() {
-        cnt->date_time.increment_year();
-        cnt->refresh_bufs();
+        clock->date_time.increment_year();
+        clock->refresh_bufs();
     }
     void down() {
-        cnt->date_time.decrement_year();
-        cnt->refresh_bufs();
+        clock->date_time.decrement_year();
+        clock->refresh_bufs();
     }
     void date();
     void time() {
@@ -210,33 +182,21 @@ public:
 };
 
 
-class ChangeMonth : public State {
-private:
-    bool displayed = true;
-
+class ChangeMonth : public Blinking {
 public:
     void tick() {
-        if (++counter == 200) {
-            counter = 0;
-            if (displayed) {
-                strncpy(cnt->date_buf + 3, "  ", 2);
-                cnt->buf_changed = true;
-            }
-            else cnt->refresh_bufs();
-
-            displayed = !displayed;
-        }
+        blink(200, clock->date_buf + 3, 2);
     }
     void up() {
-        cnt->date_time.increment_month();
-        cnt->refresh_bufs();
+        clock->date_time.increment_month();
+        clock->refresh_bufs();
     }
     void down() {
-        cnt->date_time.decrement_month();
-        cnt->refresh_bufs();
+        clock->date_time.decrement_month();
+        clock->refresh_bufs();
     }
     void date() {
-        cnt->change_state(new ChangeYear);
+        clock->change_state(new ChangeYear);
     }
     void time() {
         return;
@@ -244,32 +204,21 @@ public:
 };
 
 
-class ChangeDay : public State {
-private:
-    bool displayed = true;
-
+class ChangeDay : public Blinking {
 public:
     void tick() {
-        if (++counter == 200) {
-            counter = 0;
-            if (displayed) {
-                strncpy(cnt->date_buf, "  ", 2);
-                cnt->buf_changed = true;
-            }
-            else cnt->refresh_bufs();
-            displayed = !displayed;
-        }
+        blink(200, clock->date_buf, 2);
     }
     void up() {
-        cnt->date_time.increment_day();
-        cnt->refresh_bufs();
+        clock->date_time.increment_day();
+        clock->refresh_bufs();
     }
     void down() {
-        cnt->date_time.decrement_day();
-        cnt->refresh_bufs();
+        clock->date_time.decrement_day();
+        clock->refresh_bufs();
     }
     void date() {
-        cnt->change_state(new ChangeMonth);
+        clock->change_state(new ChangeMonth);
     }
     void time() {
         return;
@@ -282,8 +231,8 @@ public:
     void tick() {
         if (++counter == 500) {
             counter = 0;
-            cnt->date_time.tick();
-            cnt->refresh_bufs();
+            clock->date_time.tick();
+            clock->refresh_bufs();
         }
     };
     void up() {
@@ -293,22 +242,22 @@ public:
         return;
     }
     void date() {
-        cnt->change_state(new ChangeDay);
+        clock->change_state(new ChangeDay);
     }
     void time() {
-        cnt->change_state(new ChangeHours);
+        clock->change_state(new ChangeHours);
     }
 };
 
 
 void ChangeSeconds::time() {
-    cnt->date_time.adjust_day_after_change();
-    cnt->change_state(new Working);
+    clock->date_time.adjust_day_after_change();
+    clock->change_state(new Working);
 }
 
 void ChangeYear::date() {
-    cnt->date_time.adjust_day_after_change();
-    cnt->change_state(new Working);
+    clock->date_time.adjust_day_after_change();
+    clock->change_state(new Working);
 }
 
 #endif /* CLOCK_H */
