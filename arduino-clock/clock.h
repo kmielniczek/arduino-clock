@@ -282,7 +282,7 @@ public:
     void tick() {
         if (++counter == 500) {
             counter = 0;
-            cnt->date_time.increment_seconds();
+            cnt->date_time.tick();
             cnt->refresh_bufs();
         }
     };
