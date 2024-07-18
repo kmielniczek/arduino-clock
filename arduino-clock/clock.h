@@ -95,6 +95,12 @@ public:
             displayed = !displayed;
         }
     }
+
+    void datetime_modified() {
+        counter = 0;
+        displayed = true;
+        clock->refresh_bufs();
+    }
 };
 
 
@@ -105,11 +111,11 @@ public:
     }
     void up() {
         clock->date_time.increment_seconds();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void down() {
         clock->date_time.decrement_seconds();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void date() {
         return;
@@ -125,11 +131,11 @@ public:
     }
     void up() {
         clock->date_time.increment_minutes();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void down() {
         clock->date_time.decrement_minutes();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void date() {
         return;
@@ -147,11 +153,11 @@ public:
     }
     void up() {
         clock->date_time.increment_hours();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void down() {
         clock->date_time.decrement_hours();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void date() {
         return;
@@ -169,11 +175,11 @@ public:
     }
     void up() {
         clock->date_time.increment_year();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void down() {
         clock->date_time.decrement_year();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void date();
     void time() {
@@ -189,11 +195,11 @@ public:
     }
     void up() {
         clock->date_time.increment_month();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void down() {
         clock->date_time.decrement_month();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void date() {
         clock->change_state(new ChangeYear);
@@ -211,11 +217,11 @@ public:
     }
     void up() {
         clock->date_time.increment_day();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void down() {
         clock->date_time.decrement_day();
-        clock->refresh_bufs();
+        datetime_modified();
     }
     void date() {
         clock->change_state(new ChangeMonth);
